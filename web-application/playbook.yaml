@@ -38,11 +38,8 @@
     - name: Create Application DB User
       mysql_user: name={{ db_user }} password={{ db_password }} priv='*.*:ALL' host='%' state='present'
 
-    - name: Create employee_db database
-      mysql_db:
-        name: employee_db
-        become_user: mysql
-        become: yes
+    - name: Create Application Database
+      mysql_db: name={{ db_name }} state=present
 
     - name: Insert test data into employee_db
       mysql_query:
