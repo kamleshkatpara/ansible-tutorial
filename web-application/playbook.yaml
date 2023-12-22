@@ -17,10 +17,10 @@
         - "python3-mysqldb"
 
     - name: Install MySQL community repository
-      yum_repository:
+      apt_repository:
         name: MySQL Community
         description: MySQL Community Repository
-        baseurl: http://repo.mysql.com/yum/mysql-{{ ansible_distribution_major_version }}.{{ ansible_distribution_release }}/x86_64/
+        baseurl: http://repo.mysql.com/apt/mysql-{{ ansible_distribution_major_version }}.{{ ansible_distribution_release }}/x86_64/
         gpgcheck: yes
         gpgkey: http://repo.mysql.com/RPM-GPG-KEY-mysql
         state: present
