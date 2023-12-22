@@ -1,3 +1,2 @@
-[db_and_web_server]
-ansible-target-1 ansible_host=192.168.0.11 ansible_ssh_pass=vagrant
-ansible-target-2 ansible_host=192.168.0.12 ansible_ssh_pass=vagrant
+db_and_web_server_1 ansible_host=192.168.0.11 ansible_ssh_pass=vagrant
+db_and_web_server_2 ansible_host=192.168.0.12 ansible_ssh_pass=vagrant
