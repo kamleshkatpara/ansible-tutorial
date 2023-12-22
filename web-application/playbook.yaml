@@ -33,11 +33,14 @@
     - name: Create database and users
       become: yes
       become_user: mysql
+      ansible_become: yes
+      ansible_become_user: root
       mysql_user:
         name: db_user
         password: Passw0rd
         host: "%"
         priv: "*.*:ALL,GRANT"
+
 
     - name: Create employee_db database
       mysql_db:
