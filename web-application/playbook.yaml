@@ -41,13 +41,13 @@
     - name: Create Application Database
       mysql_db: name={{ db_name }} state=present
 
-    - name: Install Python Flask dependency
-      pip:
-        name: "{{ item }}"
-        executable: pip3
-      loop:
-        - flask
-        - Flask-MySQLdb
+    # - name: Install Python Flask dependency
+    #   pip:
+    #     name: "{{ item }}"
+    #     executable: pip3
+    #   loop:
+    #     - flask
+    #     - Flask-MySQLdb
 
-    - name: Configure and start Web Server
-      command: "FLASK_APP=app.py flask run --host=0.0.0.0"
+    # - name: Configure and start Web Server
+    #   command: "FLASK_APP=app.py flask run --host=0.0.0.0"
