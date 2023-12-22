@@ -44,11 +44,16 @@
         state: present
 
     - name: Secure MySQL Installation
-      mysql_secure_installation:
-        login_user: root
-        login_password: "{{ mysql_root_password }}"
-        new_root_password: "{{ mysql_root_password }}"
-        validate_certs: no
+      mysql_user:
+        name: root
+        password: "{{ mysql_root_password }}"
+        host: "{{ item }}"
+        priv: "*.*:ALL,GRANT"
+        state: present
+      with_items:
+        - localhost
+        - 127.0.0.1
+        - ::1
 
     - name: Create MySQL Database
       mysql_db:
