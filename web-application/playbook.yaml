@@ -31,16 +31,14 @@
         mode: 0644
 
     - name: Add MySQL APT Repository Key
-      apt_key:
-        keyring: /etc/apt/trusted.gpg.d/mysql.gpg
-        filename: /tmp/RPM-GPG-KEY-mysql
-        state: present
+      command: apt-key add /tmp/RPM-GPG-KEY-mysql
+      become: yes
 
     - name: Add MySQL APT Repository
       apt_repository:
         repo: deb http://repo.mysql.com/apt/debian/ buster mysql-8.0
         state: present
-        
+
     - name: Update APT Package Cache
       apt:
         update_cache: yes
