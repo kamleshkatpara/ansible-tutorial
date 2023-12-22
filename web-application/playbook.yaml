@@ -41,11 +41,6 @@
     - name: Create Application Database
       mysql_db: name={{ db_name }} state=present
 
-    - name: Insert test data into employee_db
-      mysql_query:
-        query: "INSERT INTO employees VALUES ('JOHN')"
-        db: employee_db
-
     - name: Install Python Flask dependency
       pip:
         name: "{{ item }}"
