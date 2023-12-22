@@ -1,7 +1,7 @@
 ---
 - name: Setup Application on Debian
-  hosts: your_target_host
-  become: yes  # To run tasks with sudo
+  hosts: db_and_web_server_1, db_and_web_server_2
+  become: yes
 
   tasks:
     - name: Install all required dependencies
