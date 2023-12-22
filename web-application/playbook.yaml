@@ -13,6 +13,8 @@
         - "python3"
         - "python3-pip"
         - "python3-venv"
+        - python3-mysqldb
+        - libmysqlclient-dev
 
     - name: Install MySQL community repository
       apt:
@@ -25,14 +27,14 @@
         state: present
       with_items:
         - "mysql-server"
-        - "mysql-devel"
+        - "mysql-client"
 
     - name: create MySQL configuration file
       copy:
         content: |
           [client]
           user=root
-          password="@targ8et"
+          password="root"
         dest: "/etc/.my.cnf"
 
     - name: Start MySQL Service
@@ -40,16 +42,6 @@
         name: mysqld
         state: started
         enabled: yes
-
-    - name: Install mysql-python package
-      apt:
-        name: MySQL-python
-        state: present
-
-    - name: Install pip
-      apt:
-        name: "python-pip"
-        state: present
 
     - name: Install required Python libraries
       pip:
