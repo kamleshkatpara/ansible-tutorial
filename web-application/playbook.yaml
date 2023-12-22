@@ -50,14 +50,13 @@
     #   environment:
     #     VIRTUAL_ENV: /path/to/venv  # Set the virtual environment path
 
-    - name: Install Flask within the virtual environment
-      pip:
-        name: "{{ item }}"
-        state: present
-        # virtualenv: /path/to/venv  # Specify the virtual environment to use
+    - name: Install Flask and Flask-MySQL within the virtual environment
+      command: "{{ item }}"
+      args:
+        chdir: /path/to/your/app  # Specify the path to your application
       loop:
-      - flask
-      - Flask-MySQL
+        - "/path/to/venv/bin/pip3 install flask"
+        - "/path/to/venv/bin/pip3 install Flask-MySQL"
 
 
     # - name: Configure and start Web Server
