@@ -1,49 +1,62 @@
 ---
-- name: Install and Secure MySQL Server
-  hosts: db_and_web_server_1, db_and_web_server_2
-  become: yes
+- name: Setup Application on Debian
+  hosts: your_target_host
+  become: yes  # To run tasks with sudo
 
   tasks:
-    - name: Update apt cache
+    - name: Install all required dependencies
       apt:
-        update_cache: yes
+        name:
+          - python3
+          - python3-setuptools
+          - python3-dev
+          - build-essential
+          - python3-pip
+          - default-libmysqlclient-dev
+      state: present
 
-    - name: Install gnupg
+    - name: Install and Configure Database
       apt:
-        name: gnupg
-        state: present
+        name:
+          - mysql-server
+          - mysql-client
+      state: present
 
-    - name: Download mysql-apt-config package
-      get_url:
-        url: "https://dev.mysql.com/get/mysql-apt-config_0.8.22-1_all.deb"
-        dest: "/home/vagrant/mysql-apt-config_0.8.22-1_all.deb"
+    - name: Start Database Service
+      service:
+        name: mysql
+        state: started
+        enabled: yes
 
-    - name: Install mysql-apt-config package
-      command: "dpkg -i /home/vagrant/mysql-apt-config_0.8.22-1_all.deb"
+    - name: Create database and users
+      mysql_user:
+        name: db_user
+        password: Passw0rd
+        host: "%"
+        priv: "*.*:ALL,GRANT"
+      become_user: mysql
       become: yes
 
-    - name: Update apt cache after adding MySQL repository
-      apt:
-        update_cache: yes
-
-    - name: Install MySQL Server
-      apt:
-        name: mysql-server
-        state: present
+    - name: Create employee_db database
+      mysql_db:
+        name: employee_db
+      become_user: mysql
       become: yes
 
-    - name: Run mysql_secure_installation
-      expect:
-        command: mysql_secure_installation
-        responses:
-          'Enter password for user root:': "{{ your_root_password }}"
-          'Press y\|Y for Yes, any other key for No': 'Y'
-          'Please enter 0 = LOW, 1 = MEDIUM and 2 = STRONG': '2'  # Adjust as needed
-          'Change the password for root \? \(\(Press y\|Y for Yes, any other key for No\)': '\n'  # Skip password change
-          'Remove anonymous users\? \(Press y\|Y for Yes, any other key for No\)': 'Y'
-          'Disallow root login remotely\? \(Press y\|Y for Yes, any other key for No\)': 'Y'
-          'Remove test database and access to it\? \(Press y\|Y for Yes, any other key for No\)': 'Y'
-          'Reload privilege tables now\? \(Press y\|Y for Yes, any other key for No\)': 'Y'
+    - name: Insert test data into employee_db
+      mysql_query:
+        query: "INSERT INTO employees VALUES ('JOHN')"
+        db: employee_db
+      become_user: mysql
+      become: yes
 
-  vars:
-    your_root_password: "root"  # Set your desired MySQL root password
+    - name: Install Python Flask dependency
+      pip:
+        name: "{{ item }}"
+        executable: pip3
+      loop:
+        - flask
+        - Flask-MySQLdb
+
+    - name: Configure and start Web Server
+      command: "FLASK_APP=app.py flask run --host=0.0.0.0"
