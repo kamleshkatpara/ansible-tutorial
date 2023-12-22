@@ -55,9 +55,9 @@
         name: "{{ item }}"
         state: present
         # virtualenv: /path/to/venv  # Specify the virtual environment to use
-        loop:
-        - flask
-        - Flask-MySQL
+      loop:
+      - flask
+      - Flask-MySQL
 
 
     # - name: Configure and start Web Server
