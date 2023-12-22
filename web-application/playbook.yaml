@@ -4,41 +4,35 @@
   become: yes
 
   tasks:
-    - name: Install all required dependencies
-      apt: name={{ item }} state=present
-      loop:
-        - python3
-        - python3-setuptools
-        - python3-dev
-        - build-essential
-        - python3-pip
-        - default-libmysqlclient-dev
+    - name: Download MySQL tarball bundle
+      get_url:
+        url: "https://dev.mysql.com/get/mysql-apt-config_0.8.17-1_all.deb"
+        dest: "/tmp/mysql-apt-config.deb"
 
-    - name: Install and Configure Database
-      apt: name={{ item }} state=present
-      loop:
-       - mysql-server
-       - mysql-client
+    - name: Install MySQL APT configuration
+      apt:
+        deb: "/tmp/mysql-apt-config.deb"
+        update_cache: yes
 
-    - name: Start Database Service
-      service: name=mysql, state=started, enabled=yes
+    - name: Install libaio1 library
+      apt:
+        name: libaio1
+        state: present
 
-    - name: Create database and users
-      mysql_user: name=db_user, password=Passw0rd, host="%", priv="*.*:ALL,GRANT", become_user=mysql, become=yes
+    - name: Preconfigure MySQL server package
+      shell: "sudo dpkg-preconfigure mysql-server"
+      args:
+        chdir: "/var/cache/debconf"
+      become: yes
 
-    - name: Create employee_db database
-      mysql_db: name=employee_db, become_user=mysql, become=yes
+    - name: Install MySQL packages
+      apt:
+        deb: "/tmp/mysql-server_MVER-DVER_CPU.deb-bundle.tar/mysql-{common,community-client-plugins,community-client-core,community-client,client,community-server-core,community-server,server}_*.deb"
+        state: present
 
-    - name: Insert test data into employee_db
-      mysql_query: query="INSERT INTO employees VALUES ('JOHN')", db=employee_db, become_user=mysql, become=yes
-
-    - name: Install Python Flask dependency
-      pip:
-        name: "{{ item }}"
-        executable: pip3
-      loop:
-        - flask
-        - Flask-MySQLdb
-
-    - name: Configure and start Web Server
-      command: "FLASK_APP=app.py flask run --host=0.0.0.0"
+    - name: Fix unmet dependencies (if any)
+      apt:
+        name: "*"
+        state: present
+      when: "'unmet dependencies' in dpkg_output.stdout"
+      register: dpkg_output
