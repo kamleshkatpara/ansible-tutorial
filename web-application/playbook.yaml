@@ -45,8 +45,6 @@
       mysql_query:
         query: "INSERT INTO employees VALUES ('JOHN')"
         db: employee_db
-        become_user: mysql
-        become: yes
 
     - name: Install Python Flask dependency
       pip:
