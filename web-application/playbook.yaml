@@ -39,12 +39,13 @@
       mysql_db: name={{ db_name }} state=present
 
     - name: Install Python Flask dependency
-      pip:
+      apt:
         name: "{{ item }}"
-        executable: pip3
+        state: present
       loop:
-        - flask
-        - flask-mysql
+        - python3-flask
+        - python3-flask-mysqldb
+
 
     # - name: Configure and start Web Server
     #   command: "FLASK_APP=app.py flask run --host=0.0.0.0"
