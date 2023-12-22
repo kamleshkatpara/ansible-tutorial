@@ -2,7 +2,7 @@
 # vi: set ft=ruby:
 
 # Define variables for repeatable values
-static_ip_range = 192.168.0.
+static_ip_range = "192.168.0."
 ansible_controller_cpus = 2
 ansible_controller_memory = 2048
 target_cpus = 1
@@ -40,6 +40,7 @@ Vagrant.configure("2") do |config|
       sudo cat /home/vagrant/.ssh/id_rsa.pub >> /home/vagrant/.ssh/authorized_keys
       sudo chmod 700 /home/vagrant/.ssh && chmod 600 /home/vagrant/.ssh/authorized_keys
       sudo apt install git -y
+      sudo apt-get update -y
       echo "Provisioning script completed on ansible-controller"
     SHELL
   end
@@ -66,6 +67,7 @@ Vagrant.configure("2") do |config|
         sudo cat /home/vagrant/.ssh/id_rsa.pub >> /home/vagrant/.ssh/authorized_keys
         sudo chmod 700 /home/vagrant/.ssh && chmod 600 /home/vagrant/.ssh/authorized_keys
         sudo apt install git -y
+        sudo apt-get update -y
         echo "Provisioning script completed on ansible-target-#{i}"
       SHELL
     end
