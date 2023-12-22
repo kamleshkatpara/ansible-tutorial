@@ -1,94 +1,92 @@
 # This playbook requires privilege escalation to be set. Please
-# refer to ansible.cfg in the current working directory for privilege_escalation
+# refer the ansible.cfg in current working directory for privilege_escalation
 # configuration.
 
 - name: Deploy a web application
   hosts: db_and_web_server_1,db_and_web_server_2
-  become: yes
-  become_user: root
   vars:
-    mysql_root_password: 'secure-root-pw'
-    ansible_python_interpreter: /usr/bin/python3
+    root_password: Root@123
+    admin_user: admin
+    admin_password: Root@123
+    db_name: employee_db
+    password_validation_policy: 1
   tasks:
-    - name: Ensure required packages are installed
-      dnf:
-        name:
-          - mysql-server
-          - mysql-devel
-          - python39
-          - python39-devel
-          - python39-pip
-          - gcc
-        state: latest
+    - name: Update apt cache
+      apt:
+        update_cache: yes
 
-    - name: Install Required pip modules
-      pip:
-        name:
-          - PyMySQL
-        state: present
-        executable: pip3
+    - name: Installing Mysql
+      package:
+         name: "{{item}}"
+         state: present
+         update_cache: yes
+      loop:
+        - mysql-server
+        - mysql-client
+        - python3-mysqldb
+        - libmysqlclient-dev
+      become: yes
 
-    - name: Ensure mysql service is running
-      systemd:
-        name: mysqld
-        state: restarted
-        enabled: yes
+    - name: start and enable mysql service
+      service:
+         name: mysql
+         state: started
+         enabled: yes
 
-    - name: Ensure root user can only login from localhost
+    - name: Set root user password
       mysql_user:
-        login_password: "{{ mysql_root_password }}"
-        check_implicit_admin: yes
         name: root
-        host: "{{ item }}"
-        password: "{{ mysql_root_password }}"
+        password: "{{root_password}}"
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+        host: localhost
+        login_user: root
+        login_password: ''
         state: present
-      with_items:
-        - localhost
-        - 127.0.0.1
-        - ::1
 
-    - name: Add .my.cnf to user home
-      template:
-        src: my.cnf.j2
-        dest: /root/.my.cnf
+    - name: Create admin user with remote access
+      mysql_user:
+        name: "{{admin_user}}"
+        password: "{{admin_password}}"
+        priv: '*.*:ALL'
+        host: '%'
+        append_privs: yes
+        login_user: root
+        login_password: "{{root_password}}"
+        state: present
+    
+    - name: creating database 
+      mysql_db:
+        name: "{{db_name}}"
+        state: present
+        login_user: root
+        login_password: "{{root_password}}"
+    
+    - name: Enable remote login to mysql
+      lineinfile:
+        path: /etc/mysql/mysql.conf.d/mysqld.cnf
+        regex: '^bind-address\s*=\s*127.0.0.1'
+        line: 'bind-address = 0.0.0.0'
+        backup: yes
+      notify:
+        - Restart mysql
 
-    - name: Reload privilege tables
-      command: |
-        mysql -p{{ mysql_root_password }} -ne "{{ item }}"
-      with_items:
-        - FLUSH PRIVILEGES
-      changed_when: False
+    - name: Execute MySQL secure installation
+      expect:
+        command: mysql_secure_installation
+        responses:
+          'Enter password for user root:': "{{ root_password }}"
+          'Press y\|Y for Yes, any other key for No': 'Y'
+          'Please enter 0 = LOW, 1 = MEDIUM and 2 = STRONG': "{{ password_validation_policy }}"
+          'Change the password for root \? \(\(Press y\|Y for Yes, any other key for No\)': 'n'
+          'Remove anonymous users\? \(Press y\|Y for Yes, any other key for No\)': 'Y'
+          'Disallow root login remotely\? \(Press y\|Y for Yes, any other key for No\)': 'Y'
+          'Remove test database and access to it\? \(Press y\|Y for Yes, any other key for No\)': 'Y'
+          'Reload privilege tables now\? \(Press y\|Y for Yes, any other key for No\)': 'Y'
+      environment:
+        MYSQL_PWD: "{{ root_password }}"
 
-    - name: Remove anonymous users
-      command: |
-        mysql -p{{ mysql_root_password }} -ne "{{ item }}"
-      with_items:
-        - DELETE FROM mysql.user WHERE User=''
-      changed_when: False
-
-    - name: Disallow root login remotely
-      command: |
-        mysql -p{{ mysql_root_password }} -ne "{{ item }}"
-      with_items:
-        - DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1')
-      changed_when: False
-
-    - name: Remove test database and access to it
-      command: |
-        mysql -p{{ mysql_root_password }} -ne "{{ item }}"
-      with_items:
-        - DROP DATABASE IF EXISTS test
-        - DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%'
-      changed_when: False
-
-    - name: Reload privilege tables
-      command: |
-        mysql -p{{ mysql_root_password }} -ne "{{ item }}"
-      with_items:
-        - FLUSH PRIVILEGES
-      changed_when: False
-
-    - name: Delete .my.conf
-      file:
-        path: /root/.my.cnf
-        state: absent
+  handlers:
+    - name: Restart mysql
+      service:
+        name: mysql
+        state: restarted
