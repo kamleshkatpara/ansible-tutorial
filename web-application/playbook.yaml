@@ -12,8 +12,8 @@
         name: "{{ item }}"
         state: present
       loop:
-        - python
-        - python-dev  # Use python-dev instead of python-devel on Debian-based systems
+        - python3
+        - python3-dev  # Use python-dev instead of python-devel on Debian-based systems
 
     - name: Add MySQL APT repository key
       apt_key:
