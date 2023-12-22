@@ -5,28 +5,23 @@
 
   tasks:
     - name: Install all required dependencies
-      apt:
-        name:
-          - python3
-          - python3-setuptools
-          - python3-dev
-          - build-essential
-          - python3-pip
-          - default-libmysqlclient-dev
-      state: present
+      apt: name={{ item }} state=present
+      loop:
+        - python3
+        - python3-setuptools
+        - python3-dev
+        - build-essential
+        - python3-pip
+        - default-libmysqlclient-dev
 
     - name: Install and Configure Database
-      apt:
-        name:
-          - mysql-server
-          - mysql-client
-      state: present
+      apt: name={{ item }} state=present
+      loop:
+       - mysql-server
+       - mysql-client
 
     - name: Start Database Service
-      service:
-        name: mysql
-        state: started
-        enabled: yes
+      service: name=mysql, state=started, enabled=yes
 
     - name: Create database and users
       mysql_user: name=db_user, password=Passw0rd, host="%", priv="*.*:ALL,GRANT", become_user=mysql, become=yes
