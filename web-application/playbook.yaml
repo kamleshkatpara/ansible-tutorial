@@ -44,7 +44,7 @@
         state: present
       loop:
         - python3-flask
-        - python3-flask-mysqldb
+        - flask-mysql
 
 
     # - name: Configure and start Web Server
