@@ -1,28 +1,28 @@
 # This playbook requires privilege escalation to be set. Please
-# refer the ansible.cfg in current working directory for privilege_escalation
+# refer to ansible.cfg in the current working directory for privilege_escalation
 # configuration.
 
 - name: Deploy a web application
-  hosts: db_and_web_server_1,db_and_web_server_2
-  
+  hosts: db_and_web_server1,db_and_web_server2
+  become: yes
+  become_user: root
   tasks:
     - name: Install all required dependencies
-      apt:
+      package:
         name: "{{ item }}"
         state: present
-      with_items:
-        - "python3"
-        - "python3-pip"
-        - "python3-venv"
-        - "python3-mysqldb"
+      loop:
+        - python
+        - python-dev  # Use python-dev instead of python-devel on Debian-based systems
 
-    - name: Install MySQL community repository
+    - name: Add MySQL APT repository key
+      apt_key:
+        url: http://repo.mysql.com/RPM-GPG-KEY-mysql
+        state: present
+
+    - name: Add MySQL APT repository
       apt_repository:
-        name: MySQL Community
-        description: MySQL Community Repository
-        baseurl: http://repo.mysql.com/apt/mysql-{{ ansible_distribution_major_version }}.{{ ansible_distribution_release }}/x86_64/
-        gpgcheck: yes
-        gpgkey: http://repo.mysql.com/RPM-GPG-KEY-mysql
+        repo: "deb http://repo.mysql.com/apt/debian/ buster mysql-{{ mysql_version }}"
         state: present
 
     - name: Install MySQL database
@@ -31,7 +31,7 @@
         state: present
       loop:
         - mysql-server
-        - mysql-devel
+        - libmysqlclient-dev  # Use libmysqlclient-dev instead of mysql-devel on Debian-based systems
 
     - name: Create MySQL configuration file
       copy:
@@ -43,18 +43,18 @@
 
     - name: Start MySQL Service
       systemd:
-        name: mysqld
+        name: mysql
         state: started
         enabled: yes
 
     - name: Install mysql-python package
-      package:
-        name: MySQL-python
+      apt:
+        name: python-mysqldb  # Use python-mysqldb instead of MySQL-python on Debian-based systems
         state: present
 
     - name: Install pip
-      package:
-        name: "python-pip"
+      apt:
+        name: python-pip
         state: present
 
     - name: Install required Python libraries
@@ -72,8 +72,8 @@
 
     - name: Create Database user
       mysql_user:
-        name: db_user
-        password: Passw0rd
+        name: root
+        password: root
         priv: '*.*:ALL'
         state: present
 
