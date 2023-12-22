@@ -7,6 +7,8 @@
     db_name: employee_db
     db_user: db_user
     db_password: Passw0rd
+    venv_path: /path/to/venv
+    app_code_dest: /opt/app.py
 
   tasks:
     - name: Install required dependencies
@@ -33,34 +35,43 @@
         enabled: yes
 
     - name: Create Application DB User
-      mysql_user: name={{ db_user }} password={{ db_password }} priv='*.*:ALL' host='%' state='present'
+      mysql_user:
+        name: "{{ db_user }}"
+        password: "{{ db_password }}"
+        priv: '*.*:ALL'
+        host: '%'
+        state: present
 
     - name: Create Application Database
-      mysql_db: name={{ db_name }} state=present
+      mysql_db:
+        name: "{{ db_name }}"
+        state: present
 
     - name: Create Python virtual environment
-      command: python3 -m venv /path/to/venv
+      command: python3 -m venv "{{ venv_path }}"
       args:
-        creates: /path/to/venv  # Skip if the virtual environment already exists
+        creates: "{{ venv_path }}"  # Skip if the virtual environment already exists
 
     - name: Activate virtual environment
-      command: source /path/to/venv/bin/activate
+      command: "{{ venv_path }}/bin/activate"
       args:
-        creates: /path/to/venv/bin/activate  # Skip if the virtual environment is already activated
+        creates: "{{ venv_path }}/bin/activate"  # Skip if the virtual environment is already activated
       environment:
-        VIRTUAL_ENV: /path/to/venv  # Set the virtual environment path
+        VIRTUAL_ENV: "{{ venv_path }}"  # Set the virtual environment path
 
-    - name: Install Flask within the virtual environment
+    - name: Install Flask and Flask-MySQL within the virtual environment
       pip:
         name: "{{ item }}"
         state: present
-        virtualenv: /path/to/venv  # Specify the virtual environment to use
+        virtualenv: "{{ venv_path }}"  # Specify the virtual environment to use
       loop:
-      - flask
-      - Flask-MySQL
+        - flask
+        - Flask-MySQL
 
     - name: Copy web-server code
-      copy: src=app.py dest=/opt/app.py
+      copy:
+        src: app.py
+        dest: "{{ app_code_dest }}"
 
     - name: Start web-application
-      shell: FLASK_APP=/opt/app.py nohup flask run --host=0.0.0.0 &
+      shell: "FLASK_APP={{ app_code_dest }} nohup flask run --host=0.0.0.0 &"
