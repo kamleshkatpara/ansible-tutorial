@@ -3,7 +3,7 @@
 # configuration.
 
 - name: Deploy a web application
-  hosts: db_and_web_server1,db_and_web_server2
+  hosts: db_and_web_server_1,db_and_web_server_2
   become: yes
   become_user: root
   tasks:
