@@ -16,10 +16,10 @@
     - name: Download mysql-apt-config package
       get_url:
         url: "https://dev.mysql.com/get/mysql-apt-config_0.8.22-1_all.deb"
-        dest: "/tmp/mysql-apt-config_0.8.22-1_all.deb"
+        dest: "/home/vagrant/mysql-apt-config_0.8.22-1_all.deb"
 
     - name: Install mysql-apt-config package
-      command: "dpkg -i /tmp/mysql-apt-config_0.8.22-1_all.deb"
+      command: "dpkg -i /home/vagrant/mysql-apt-config_0.8.22-1_all.deb"
       become: yes
 
     - name: Update apt cache after adding MySQL repository
