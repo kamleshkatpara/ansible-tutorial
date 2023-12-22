@@ -29,26 +29,13 @@
         enabled: yes
 
     - name: Create database and users
-      mysql_user:
-        name: db_user
-        password: Passw0rd
-        host: "%"
-        priv: "*.*:ALL,GRANT"
-      become_user: mysql
-      become: yes
+      mysql_user: name=db_user, password=Passw0rd, host="%", priv="*.*:ALL,GRANT", become_user=mysql, become=yes
 
     - name: Create employee_db database
-      mysql_db:
-        name: employee_db
-      become_user: mysql
-      become: yes
+      mysql_db: name=employee_db, become_user=mysql, become=yes
 
     - name: Insert test data into employee_db
-      mysql_query:
-        query: "INSERT INTO employees VALUES ('JOHN')"
-        db: employee_db
-      become_user: mysql
-      become: yes
+      mysql_query: query="INSERT INTO employees VALUES ('JOHN')", db=employee_db, become_user=mysql, become=yes
 
     - name: Install Python Flask dependency
       pip:
