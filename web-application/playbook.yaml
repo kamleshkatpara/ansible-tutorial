@@ -62,5 +62,5 @@
     - name: Copy web-server code
       copy: src=app.py dest=/opt/app.py
 
-    - name: Configure and start Web Server
-      command: "FLASK_APP=app.py flask run --host=0.0.0.0"
+    - name: Start web-application
+      shell: FLASK_APP=/opt/app.py nohup flask run --host=0.0.0.0 &
