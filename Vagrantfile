@@ -2,6 +2,7 @@
 # vi: set ft=ruby:
 
 # Define variables for repeatable values
+static_ip_range = 192.168.0.
 ansible_controller_cpus = 2
 ansible_controller_memory = 2048
 target_cpus = 1
@@ -14,7 +15,7 @@ Vagrant.configure("2") do |config|
   # Ansible Controller Configuration
   config.vm.define "ansible-controller" do |controller|
     controller.vm.hostname = "ansible-controller"
-    controller.vm.network "public_network", bridge: "Intel(R) Wi-Fi 6 AX201 160MHz"
+    controller.vm.network "public_network", bridge: "Intel(R) Wi-Fi 6 AX201 160MHz", ip: "#{static_ip_range}10"
     
     # VirtualBox Provider Configuration
     controller.vm.provider "virtualbox" do |vb|
@@ -47,7 +48,7 @@ Vagrant.configure("2") do |config|
   (1..2).each do |i|
     config.vm.define "ansible-target-#{i}" do |node|
       node.vm.hostname = "ansible-target-#{i}"
-      node.vm.network "public_network", bridge: "Intel(R) Wi-Fi 6 AX201 160MHz"
+      node.vm.network "public_network", bridge: "Intel(R) Wi-Fi 6 AX201 160MHz", ip: "#{static_ip_range}1#{i}"
       
       # VirtualBox Provider Configuration
       node.vm.provider "virtualbox" do |vb|
