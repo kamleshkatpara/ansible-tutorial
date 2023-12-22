@@ -38,13 +38,22 @@
     - name: Create Application Database
       mysql_db: name={{ db_name }} state=present
 
-    - name: Install Python Flask dependency
-      apt:
-        name: "{{ item }}"
-        state: present
-      loop:
-        - python3-flask
-        - flask-mysql
+    - name: Create Python virtual environment
+      command: python3 -m venv /path/to/venv
+      args:
+        creates: /path/to/venv  # Skip if the virtual environment already exists
+
+    - name: Activate virtual environment
+      command: source /path/to/venv/bin/activate
+      args:
+        creates: /path/to/venv/bin/activate  # Skip if the virtual environment is already activated
+      environment:
+        VIRTUAL_ENV: /path/to/venv  # Set the virtual environment path
+
+    - name: Install Flask within the virtual environment
+      pip:
+        name: flask
+        virtualenv: /path/to/venv  # Specify the virtual environment to use
 
 
     # - name: Configure and start Web Server
