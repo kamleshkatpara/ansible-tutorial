@@ -4,6 +4,13 @@
 
 - name: Deploy a web application
   hosts: db_and_web_server_1,db_and_web_server_2
+
+  vars:
+    mysql_root_password: root
+    mysql_db_name: employee_db
+    mysql_user: root
+    mysql_user_password: root
+
   tasks:
     - name: Install all required dependencies
       apt:
@@ -13,35 +20,51 @@
         - "python3"
         - "python3-pip"
         - "python3-venv"
-        - python3-mysqldb
-        - libmysqlclient-dev
+        - "python3-mysqldb"
 
-    - name: Install MySQL community repository
-      apt:
-        name: "http://repo.mysql.com/mysql-community-release-el7-5.noarch.rpm"
+    - name: Add MySQL APT Repository Key
+      apt_key:
+        url: https://dev.mysql.com/doc/refman/8.0/en/checking-gpg-signature.html
+        id: A4A9406876FCBD3C456770C88C718D3B5072E1F5
+
+    - name: Add MySQL APT Repository
+      apt_repository:
+        repo: deb http://repo.mysql.com/apt/debian/ buster mysql-8.0
         state: present
 
-    - name: Install MySQL database
+    - name: Update APT Package Cache
       apt:
-        name: "{{ item }}"
+        update_cache: yes
+
+    - name: Install MySQL Server
+      apt:
+        name: mysql-server
         state: present
-      with_items:
-        - "mysql-server"
-        - "mysql-client"
 
-    - name: create MySQL configuration file
-      copy:
-        content: |
-          [client]
-          user=root
-          password="root"
-        dest: "/etc/.my.cnf"
+    - name: Secure MySQL Installation
+      mysql_secure_installation:
+        login_user: root
+        login_password: "{{ mysql_root_password }}"
+        new_root_password: "{{ mysql_root_password }}"
+        validate_certs: no
 
-    - name: Start MySQL Service
-      service:
-        name: mysqld
-        state: started
-        enabled: yes
+    - name: Create MySQL Database
+      mysql_db:
+        name: "{{ mysql_db_name }}"
+        state: present
+        login_user: "{{ mysql_user }}"
+        login_password: "{{ mysql_root_password }}"
+
+    - name: Grant All Privileges to MySQL User
+      mysql_user:
+        name: "{{ mysql_user }}"
+        password: "{{ mysql_user_password }}"
+        priv: '*.*:ALL'
+        host: localhost
+        state: present
+        login_user: root
+        login_password: "{{ mysql_root_password }}"
+        update_password: always
 
     - name: Install required Python libraries
       pip:
@@ -50,18 +73,6 @@
       with_items:
         - "flask"
         - "flask-mysql"
-
-    - name: Create Application Database
-      mysql_db:
-        name: employee_db
-        state: present
-
-    - name: Create Database user
-      mysql_user:
-        name: db_user
-        password: Passw0rd
-        priv: '*.*:ALL'
-        state: present
 
     - name: Copy source code
       copy:
