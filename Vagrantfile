@@ -36,6 +36,8 @@ Vagrant.configure("2") do |config|
       echo "deb [signed-by=/usr/share/keyrings/ansible-archive-keyring.gpg] http://ppa.launchpad.net/ansible/ansible/ubuntu $UBUNTU_CODENAME main" | sudo tee /etc/apt/sources.list.d/ansible.list
       sudo apt update && sudo apt install ansible -y
       sudo chmod 600 /home/vagrant/.ssh/id_rsa
+      sudo cat /home/vagrant/.ssh/id_rsa.pub >> /home/vagrant/.ssh/authorized_keys
+      sudo chmod 700 /home/vagrant/.ssh && chmod 600 /home/vagrant/.ssh/authorized_keys
       echo "Provisioning script completed on ansible-controller"
     SHELL
   end
