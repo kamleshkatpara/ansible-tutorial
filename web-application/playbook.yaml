@@ -31,13 +31,13 @@
         enabled: yes
 
     - name: Create database and users
+      become: yes
+      become_user: mysql
       mysql_user:
         name: db_user
         password: Passw0rd
         host: "%"
         priv: "*.*:ALL,GRANT"
-        become_user: mysql
-        become: yes
 
     - name: Create employee_db database
       mysql_db:
