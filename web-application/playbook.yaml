@@ -6,7 +6,7 @@
   hosts: db_and_web_server_1,db_and_web_server_2
   tasks:
     - name: Install all required dependencies
-      yum:
+      apt:
         name: "{{ item }}"
         state: present
       with_items:
@@ -15,12 +15,12 @@
         - "python-devel"
 
     - name: Install MySQL community repository
-      yum:
+      apt:
         name: "http://repo.mysql.com/mysql-community-release-el7-5.noarch.rpm"
         state: present
 
     - name: Install MySQL database
-      yum:
+      apt:
         name: "{{ item }}"
         state: present
       with_items:
@@ -42,12 +42,12 @@
         enabled: yes
 
     - name: Install mysql-python package
-      yum:
+      apt:
         name: MySQL-python
         state: present
 
     - name: Install pip
-      yum:
+      apt:
         name: "python-pip"
         state: present
 
