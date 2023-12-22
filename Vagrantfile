@@ -38,6 +38,7 @@ Vagrant.configure("2") do |config|
       sudo chmod 600 /home/vagrant/.ssh/id_rsa
       sudo cat /home/vagrant/.ssh/id_rsa.pub >> /home/vagrant/.ssh/authorized_keys
       sudo chmod 700 /home/vagrant/.ssh && chmod 600 /home/vagrant/.ssh/authorized_keys
+      sudo apt install git -y
       echo "Provisioning script completed on ansible-controller"
     SHELL
   end
@@ -63,6 +64,7 @@ Vagrant.configure("2") do |config|
       node.vm.provision "shell", inline: <<-SHELL
         sudo cat /home/vagrant/.ssh/id_rsa.pub >> /home/vagrant/.ssh/authorized_keys
         sudo chmod 700 /home/vagrant/.ssh && chmod 600 /home/vagrant/.ssh/authorized_keys
+        sudo apt install git -y
         echo "Provisioning script completed on ansible-target-#{i}"
       SHELL
     end
