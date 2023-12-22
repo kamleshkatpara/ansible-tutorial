@@ -4,6 +4,7 @@
 
 - name: Deploy a web application
   hosts: db_and_web_server_1,db_and_web_server_2
+  become: yes
 
   vars:
     mysql_root_password: root
@@ -20,12 +21,13 @@
         - "python3"
         - "python3-pip"
         - "python3-venv"
+        - "python3-dev"
         - "python3-mysqldb"
 
     - name: Add MySQL APT Repository Key
       apt_key:
-        url: https://dev.mysql.com/doc/refman/8.0/en/checking-gpg-signature.html
-        id: A4A9406876FCBD3C456770C88C718D3B5072E1F5
+        keyserver: keyserver.ubuntu.com
+        id: 8C718D3B5072E1F5
 
     - name: Add MySQL APT Repository
       apt_repository:
@@ -72,7 +74,7 @@
         state: present
       with_items:
         - "flask"
-        - "flask-mysql"
+        - "Flask-MySQLdb"
 
     - name: Copy source code
       copy:
