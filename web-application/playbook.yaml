@@ -66,6 +66,7 @@
         virtualenv: "{{ venv_path }}"  # Specify the virtual environment to use
       loop:
         - flask
+        - flask-mysqldb
 
     - name: Copy web-server code
       copy:
