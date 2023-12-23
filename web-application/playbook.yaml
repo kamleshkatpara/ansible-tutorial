@@ -1,14 +1,10 @@
 ---
 - name: Setup Application on Debian
-  hosts: db_and_web_server_1, db_and_web_server_2
+  hosts: db_and_web_servers
   become: yes
 
-  vars:
-    db_name: employee_db
-    db_user: db_user
-    db_password: Passw0rd
-    venv_path: /path/to/venv
-    app_code_dest: /opt/app.py
+  vars_files:
+    - /group_vars/db_and_web_servers.yml
 
   tasks:
     - name: Install required dependencies
@@ -19,59 +15,7 @@
         - python3
         - python3-pip
         - python3-venv
+        - python3-mysqldb
 
-    - name: Install and Configure Database
-      apt:
-        name: "{{ item }}"
-        state: present
-      loop:
-        - default-mysql-server
-        - default-mysql-client
-
-    - name: Start Database Service
-      service:
-        name: mysql
-        state: started
-        enabled: yes
-
-    - name: Create Application DB User
-      mysql_user:
-        name: "{{ db_user }}"
-        password: "{{ db_password }}"
-        priv: '*.*:ALL'
-        host: '%'
-        state: present
-
-    - name: Create Application Database
-      mysql_db:
-        name: "{{ db_name }}"
-        state: present
-
-    - name: Create Python virtual environment
-      command: python3 -m venv "{{ venv_path }}"
-      args:
-        creates: "{{ venv_path }}"  # Skip if the virtual environment already exists
-
-    - name: Activate virtual environment
-      command: "{{ venv_path }}/bin/activate"
-      args:
-        creates: "{{ venv_path }}/bin/activate"  # Skip if the virtual environment is already activated
-      environment:
-        VIRTUAL_ENV: "{{ venv_path }}"  # Set the virtual environment path
-
-    - name: Install Flask and Flask-MySQL within the virtual environment
-      pip:
-        name: "{{ item }}"
-        state: present
-        virtualenv: "{{ venv_path }}"  # Specify the virtual environment to use
-      loop:
-        - flask
-        - flask-mysqldb
-
-    - name: Copy web-server code
-      copy:
-        src: app.py
-        dest: "{{ app_code_dest }}"
-
-    - name: Start web-application
-      shell: "FLASK_APP={{ app_code_dest }} nohup flask run --host=0.0.0.0 &"
+    #- include_tasks: tasks/deploy_db.yml
+    - include_tasks: tasks/deploy_web.yml

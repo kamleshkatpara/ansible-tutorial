@@ -1,0 +1,29 @@
+    - name: Create Python virtual environment
+      command: python3 -m venv "{{ venv_path }}"
+      args:
+        creates: "{{ venv_path }}" 
+
+    - name: Activate virtual environment
+      command: "source {{ venv_path }}/bin/activate"
+      args:
+        creates: "{{ venv_path }}/bin/activate"
+      environment:
+        VIRTUAL_ENV: "{{ venv_path }}"
+
+
+
+    - name: Install Flask and Flask-MySQL within the virtual environment
+      pip:
+        name: "{{ item }}"
+        state: present
+        virtualenv: "{{ venv_path }}"
+      loop:
+        - flask
+
+    - name: Copy web-server code
+      copy:
+        src: app.py
+        dest: "{{ app_code_dest }}"
+
+    - name: Start web-application
+      shell: "FLASK_APP={{ app_code_dest }} nohup flask run --host=0.0.0.0 &"
