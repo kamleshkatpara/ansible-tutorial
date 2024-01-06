@@ -1,0 +1,32 @@
+---
+- name: Rollback Playbook
+  hosts: all
+  become: yes
+  tasks:
+    - name: Stop nginx
+      service: name=nginx state=stopped enabled=no
+
+    - name: Restore default nginx vhost configuration
+      copy:
+        src: "/etc/nginx/sites-available/default"
+        dest: "/etc/nginx/sites-enabled/default"
+        owner: root
+        group: root
+        mode: 0644
+      when: default_conf.stat.exists | default(false)
+
+    - name: Remove mywebsite nginx vhost configuration
+      file: path="/etc/nginx/conf.d/mywebsite.conf" state=absent
+
+    - name: Remove nginx and other packages
+      package:
+        name: "{{ item }}"
+        state: absent
+      with_items:
+        - nginx
+        - nano
+        - sshguard
+        - curl
+
+    - name: Remove website directory
+      file: path="/var/www/mywebsite" state=absent
