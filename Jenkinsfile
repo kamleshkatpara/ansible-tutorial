@@ -38,7 +38,7 @@ pipeline {
             }
         }
 
-        stage('Building') {
+        stage('Build Code') {
             steps {
                 sh 'mvn install -DskipTests'
             }
