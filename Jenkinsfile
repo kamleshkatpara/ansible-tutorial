@@ -98,7 +98,7 @@ pipeline {
             }
         }
 
-        stage('Upload App Image') {
+        stage('Upload Application Image') {
             steps {
                 script {
                     docker.withRegistry( vprofileRegistry, registryCentral ) {
